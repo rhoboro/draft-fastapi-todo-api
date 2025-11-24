@@ -1,7 +1,15 @@
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 
+from app.exceptions import init_exception_handler
+from app.log import init_log
+from app.middlewares import init_middlewares
+
 app = FastAPI(title="fastapi-todo-api")
+
+init_log()
+init_exception_handler(app)
+init_middlewares(app)
 
 
 # APIドキュメントには含めない
