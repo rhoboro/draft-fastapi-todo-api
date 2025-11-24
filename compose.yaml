@@ -8,6 +8,7 @@ services:
       - 8080:8080
     environment:
       DB_URI: "postgresql+asyncpg://postgres:password@postgres:5432"
+      USE_CONSOLE_LOG: true
       PYTHONWARNINGS: default
       PYTHONASYNCIODEBUG: 1
       PYTHONUNBUFFERED: 1

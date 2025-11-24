@@ -7,8 +7,8 @@ class Settings(BaseSettings):
 
     APP_TITLE: str = "todo-api"
     LOG_LEVEL: str = "INFO"
-    ECHO_SQL: bool = False
     DB_URI: PostgresDsn
+    USE_CONSOLE_LOG: bool = False
 
 
 settings = Settings()  # type: ignore
