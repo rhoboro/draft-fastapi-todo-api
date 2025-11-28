@@ -171,7 +171,6 @@ version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
     { name = "fastapi", extra = ["standard"] },
-    { name = "mypy" },
     { name = "pydantic-settings" },
     { name = "sqlalchemy", extra = ["postgresql-asyncpg"] },
     { name = "structlog" },
@@ -179,20 +178,23 @@ dependencies = [
 
 [package.dev-dependencies]
 dev = [
+    { name = "mypy" },
     { name = "ruff" },
 ]
 
 [package.metadata]
 requires-dist = [
     { name = "fastapi", extras = ["standard"], specifier = ">=0.121.3" },
-    { name = "mypy", specifier = ">=1.18.2" },
     { name = "pydantic-settings", specifier = ">=2.12.0" },
     { name = "sqlalchemy", extras = ["postgresql-asyncpg"], specifier = ">=2.0.44" },
     { name = "structlog", specifier = ">=25.5.0" },
 ]
 
 [package.metadata.requires-dev]
-dev = [{ name = "ruff", specifier = ">=0.14.6" }]
+dev = [
+    { name = "mypy", specifier = ">=1.18.2" },
+    { name = "ruff", specifier = ">=0.14.6" },
+]
 
 [[package]]
 name = "fastar"

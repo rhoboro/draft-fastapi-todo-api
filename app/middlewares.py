@@ -60,7 +60,6 @@ class ProcessTimeMiddleware:
 
 
 def init_middlewares(app: FastAPI) -> None:
-    app.add_middleware(ProcessTimeMiddleware)
     app.add_middleware(
         CORSMiddleware,
         allow_origins=[
@@ -73,3 +72,4 @@ def init_middlewares(app: FastAPI) -> None:
         allow_headers=["*"],
         allow_credentials=True,
     )
+    app.add_middleware(ProcessTimeMiddleware)
