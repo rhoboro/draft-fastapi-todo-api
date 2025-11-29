@@ -55,7 +55,7 @@ class ProcessTimeMiddleware:
 
         # ログを出力
         logger.info(
-            "request completed", process_time=process_time
+            "canonical-log-line", process_time=process_time
         )
 
 
