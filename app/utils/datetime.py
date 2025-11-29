@@ -1,6 +1,10 @@
 from datetime import datetime, timezone
 
 
+def utcnow() -> datetime:
+    return datetime.now(tz=timezone.utc)
+
+
 def to_utc(utc_or_native: datetime) -> datetime:
     if _is_aware(utc_or_native):
         return utc_or_native.astimezone(timezone.utc)
