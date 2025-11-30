@@ -1,3 +1,4 @@
+from .base import Base
 from .enums import Status
 from .schemas import (
     BaseSchema,
@@ -6,7 +7,6 @@ from .schemas import (
 )
 from .subtask import SubTaskModel
 from .todo import TodoModel
-from .base import Base
 
 __all__ = [
     "BaseSchema",
