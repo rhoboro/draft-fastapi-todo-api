@@ -1,54 +1,80 @@
 from uuid import UUID, uuid4
 
-from app.models import Status, Todo
-from app.utils.datetime import utcnow
+from app.database import AsyncSession
+from app.exceptions import NotFound
+from app.models import Status, Todo, TodoModel
 
 
 class ListTodos:
+    def __init__(self, session: AsyncSession) -> None:
+        self.session = session
+
     async def execute(
         self,
     ) -> list[Todo]:
-        return []
+        async with self.session() as session:
+            todos = await TodoModel.get_all(session)
+            return [
+                Todo.model_validate(todo)
+                async for todo in todos
+            ]
 
 
 class CreateTodo:
+    def __init__(self, session: AsyncSession) -> None:
+        self.session = session
+
     async def execute(self, title: str) -> Todo:
-        return Todo(
-            todo_id=uuid4(),
-            title=title,
-            status=Status.NEW,
-            updated_at=utcnow(),
-        )
+        async with self.session.begin() as session:
+            todo = await TodoModel.create(
+                session,
+                todo_id=uuid4(),
+                title=title,
+                status=Status.NEW,
+            )
+            return Todo.model_validate(todo)
 
 
 class GetTodo:
+    def __init__(self, session: AsyncSession) -> None:
+        self.session = session
+
     async def execute(self, todo_id: UUID) -> Todo:
-        return Todo(
-            todo_id=todo_id,
-            title="Todo 1",
-            status=Status.NEW,
-            updated_at=utcnow(),
-        )
+        async with self.session() as session:
+            todo = await TodoModel.get_by_id(session, todo_id)
+            if not todo:
+                raise NotFound("Todo", todo_id)
+            return Todo.model_validate(todo)
 
 
 class UpdateTodo:
+    def __init__(self, session: AsyncSession) -> None:
+        self.session = session
+
     async def execute(
         self,
         todo_id: UUID,
         title: str,
         status: Status,
     ) -> Todo:
-        return Todo(
-            todo_id=todo_id,
-            title=title,
-            status=status,
-            updated_at=utcnow(),
-        )
+        async with self.session.begin() as session:
+            todo = await TodoModel.get_by_id(session, todo_id)
+            if not todo:
+                raise NotFound("Todo", todo_id)
+            await todo.update(session, title, status)
+            return Todo.model_validate(todo)
 
 
 class DeleteTodo:
+    def __init__(self, session: AsyncSession) -> None:
+        self.session = session
+
     async def execute(
         self,
         todo_id: UUID,
     ) -> None:
-        return None
+        async with self.session.begin() as session:
+            todo = await TodoModel.get_by_id(session, todo_id)
+            if not todo:
+                return
+            await TodoModel.delete(session, todo)
