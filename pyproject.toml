@@ -34,7 +34,8 @@ strict = true
 
 [tool.pytest.ini_options]
 env = [
-    "DB_URI=postgresql+asyncpg://postgres:password@postgres:5432",
+    "DB_URI=postgresql+asyncpg://postgres:password@postgres:5432/test",
+    "USE_CONSOLE_LOG=false",
 ]
 addopts = "-v --cov=app"
 markers = ["tmp"]

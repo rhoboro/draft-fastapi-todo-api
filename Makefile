@@ -7,4 +7,7 @@ format:
 mypy:
 	docker compose exec app uv run mypy app
 
+pytest:
+	docker compose exec app uv run pytest
+
 lint: format mypy
