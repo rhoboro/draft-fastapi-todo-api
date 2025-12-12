@@ -3,6 +3,7 @@ from datetime import datetime
 from uuid import UUID
 
 import pytest
+from freezegun import freeze_time
 
 from app.database import AsyncSession
 from app.models import (
@@ -11,6 +12,15 @@ from app.models import (
     SubTaskModel,
     TodoModel,
 )
+
+
+@pytest.fixture(autouse=True)
+def fix_current_datetime() -> Iterator[None]:
+    test_time = datetime.fromisoformat(
+        "2025-12-15T20:40:50.839088Z"
+    )
+    with freeze_time(test_time):
+        yield
 
 
 @pytest.fixture()
