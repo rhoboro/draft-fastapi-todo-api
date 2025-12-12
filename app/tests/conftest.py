@@ -88,7 +88,9 @@ async def setup_tables(
 
 
 @pytest.fixture
-async def test_session() -> AsyncIterator[AsyncSession]:
+async def test_session() -> AsyncIterator[
+    async_sessionmaker[AsyncSession]
+]:
     full_uri, _, _ = get_test_db_name()
     engine = create_async_engine(full_uri)
     async with engine.connect() as conn:
@@ -128,7 +130,7 @@ async def test_session() -> AsyncIterator[AsyncSession]:
 
         # このSessionオブジェクトは
         # テストデータの作成に利用する
-        yield async_session
+        yield AsyncSessionLocal
         await async_session.close()
         # テストケース実行ごとにロールバック
         await conn.rollback()

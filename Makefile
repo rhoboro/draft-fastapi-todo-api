@@ -8,6 +8,6 @@ mypy:
 	docker compose exec app uv run mypy app
 
 pytest:
-	docker compose exec app uv run pytest
+	docker compose exec app uv run pytest -v
 
 lint: format mypy
