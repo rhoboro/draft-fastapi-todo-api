@@ -1,0 +1,21 @@
+steps:
+  # Docker Build
+  - name: 'gcr.io/cloud-builders/docker'
+    args: [
+      'image',
+      'build',
+      '--target',
+      'production',
+      '-t',
+      'asia-northeast1-docker.pkg.dev/$PROJECT_ID/fastapi-todo-api/api:latest',
+      '.',
+    ]
+    env: ['DOCKER_BUILDKIT=1']
+
+  # Docker Push
+  - name: 'gcr.io/cloud-builders/docker'
+    args: [
+      'image',
+      'push',
+      'asia-northeast1-docker.pkg.dev/$PROJECT_ID/fastapi-todo-api/api:latest',
+    ]
