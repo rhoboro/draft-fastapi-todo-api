@@ -1,4 +1,4 @@
-FROM python:3.13-slim AS base
+FROM python:3.14-slim AS base
 
 # non-rootユーザーの作成
 WORKDIR /app
@@ -8,7 +8,7 @@ RUN groupadd -r app \
 USER app
 
 # uvバイナリを配置
-COPY --from=ghcr.io/astral-sh/uv:0.9.11 /uv /bin/
+COPY --from=ghcr.io/astral-sh/uv:0.9.17 /uv /bin/
 
 FROM base AS local
 # 依存関係の解決のみ先に実行
