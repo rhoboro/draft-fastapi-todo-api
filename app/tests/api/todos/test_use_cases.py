@@ -2,6 +2,7 @@ from datetime import datetime
 from uuid import UUID
 
 import pytest
+from pytest_mock import MockerFixture
 
 from app.api.todos.use_cases import CreateTodo, GetTodo
 from app.database import AsyncSession
@@ -51,17 +52,22 @@ class TestCreateTodo:
     async def test_execute(
         self,
         test_session: AsyncSession,
+        mocker: MockerFixture,
     ) -> None:
         datetime_now = utcnow()
+        todo_id = UUID("ccc92566-d062-4a43-83a2-bbb05962a49e")
+        mocker.patch(
+            "app.api.todos.use_cases.uuid4",
+            lambda: todo_id,
+        )
+
         use_case = CreateTodo(session=test_session)
-        actual = await use_case.execute(title="new title")
+        actual = await use_case.execute(title="new todo")
         assert actual is not None
 
-        # todo_idはレコードが作成時に決まるため戻り値を使う
-        todo_id = actual.todo_id
         expected = Todo(
             todo_id=todo_id,
-            title="new title",
+            title="new todo",
             status=Status.NEW,
             updated_at=datetime_now,
         )
@@ -73,7 +79,7 @@ class TestCreateTodo:
                 session, todo_id=todo_id
             )
             assert record is not None
-            assert record.title == "new title"
+            assert record.title == "new todo"
             assert record.status == Status.NEW
             assert record.created_at == datetime_now
             assert record.updated_at == datetime_now
