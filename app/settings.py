@@ -1,4 +1,3 @@
-from pydantic import PostgresDsn
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -7,7 +6,7 @@ class Settings(BaseSettings):
 
     APP_TITLE: str = "todo-api"
     LOG_LEVEL: str = "INFO"
-    DB_URI: PostgresDsn
+    DB_URI: str
     USE_CONSOLE_LOG: bool = False
 
 

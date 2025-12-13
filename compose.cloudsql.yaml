@@ -1,0 +1,20 @@
+services:
+  app:
+    environment:
+       DB_URI: "postgresql+asyncpg://postgres:4217fbcdb3c499cf8b6a94a7aa56276fcaf4a184d5b112f7b0a19883066fea68@?host=/tmp/cloudsql/fastapi-todo-api-uysxj:asia-northeast1:test-instance"
+    volumes:
+      - socket:/tmp/cloudsql
+
+  postgres:
+    image: gcr.io/cloud-sql-connectors/cloud-sql-proxy:2.20.0
+    command: >
+      --unix-socket /tmp/cloudsql
+      --credentials-file /config/gcloud/application_default_credentials.json
+      fastapi-todo-api-uysxj:asia-northeast1:test-instance
+    volumes: !override
+      - ~/.config/gcloud/application_default_credentials.json:/config/gcloud/application_default_credentials.json:ro
+      - socket:/tmp/cloudsql
+
+volumes: !override
+  socket:
+  venv:
