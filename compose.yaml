@@ -22,7 +22,7 @@ services:
         - action: rebuild
           path: ./uv.lock
   postgres:
-    image: postgres:18.1-alpine
+    image: postgres:17-alpine
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
