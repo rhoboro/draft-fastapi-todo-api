@@ -21,19 +21,19 @@ async def test_list_todos(
             {
                 "status": "NEW",
                 "title": "Todo 1",
-                "todo_id": "fa4fa0f5-2847-475f-ba67-76f4d8fa8a00",
+                "todo_id": "fa4fa0f5-2847-475f-ba67-76f4d8fa8a00",  # noqa: E501
                 "updated_at": "2025-12-14T10:20:30.839088Z",
             },
             {
                 "status": "IN_PROGRESS",
                 "title": "Todo 2",
-                "todo_id": "63efd7b7-b825-4b8d-b60a-728bb94dd90b",
+                "todo_id": "63efd7b7-b825-4b8d-b60a-728bb94dd90b",  # noqa: E501
                 "updated_at": "2025-12-14T10:20:30.839088Z",
             },
             {
                 "status": "COMPLETED",
                 "title": "Todo 3",
-                "todo_id": "8940b5c4-57ac-4e38-8af4-82a510738717",
+                "todo_id": "8940b5c4-57ac-4e38-8af4-82a510738717",  # noqa: E501
                 "updated_at": "2025-12-14T10:20:30.839088Z",
             },
         ]
