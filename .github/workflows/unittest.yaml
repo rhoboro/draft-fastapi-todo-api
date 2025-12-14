@@ -8,6 +8,12 @@ jobs:
   unittest:
     runs-on: ubuntu-latest
     container: python:3.14-slim
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
     steps:
       - uses: actions/checkout@v6
 
@@ -28,3 +34,7 @@ jobs:
       - name: Run mypy
         id: mypy
         run: uv run mypy app
+
+      - name: Run pytest with postgresql
+        id: pytest
+        run: uv run pytest app -v
