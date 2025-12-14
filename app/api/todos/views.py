@@ -4,6 +4,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, status
 
 from app.api_route import LoggingRoute
+from app.context import bind_todo_id
 
 from .schemas import (
     CreateTodoRequest,
@@ -51,7 +52,11 @@ async def create_todo(
     )
 
 
-@router.get("/{todo_id}", summary="Todoを取得する")
+@router.get(
+    "/{todo_id}",
+    summary="Todoを取得する",
+    dependencies=[Depends(bind_todo_id)],
+)
 async def get_todo(
     todo_id: UUID,
     use_case: GetTodo = Depends(GetTodo),
@@ -62,7 +67,11 @@ async def get_todo(
     )
 
 
-@router.put("/{todo_id}", summary="Todoを更新する")
+@router.put(
+    "/{todo_id}",
+    summary="Todoを更新する",
+    dependencies=[Depends(bind_todo_id)],
+)
 async def update_todo(
     todo_id: UUID,
     data: UpdateTodoRequest,
@@ -82,6 +91,7 @@ async def update_todo(
     "/{todo_id}",
     summary="Todoを削除する",
     status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[Depends(bind_todo_id)],
 )
 async def delete_todo(
     todo_id: UUID,
@@ -91,5 +101,7 @@ async def delete_todo(
 
 
 router.include_router(
-    subtask_router, prefix="/{todo_id}/subtasks"
+    subtask_router,
+    prefix="/{todo_id}/subtasks",
+    dependencies=[Depends(bind_todo_id)],
 )

@@ -4,6 +4,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, status
 
 from app.api_route import LoggingRoute
+from app.context import bind_subtask_id
 
 from .schemas import (
     CreateSubTaskRequest,
@@ -55,7 +56,11 @@ async def create_subtask(
     )
 
 
-@router.get("/{subtask_id}", summary="SubTaskを取得する")
+@router.get(
+    "/{subtask_id}",
+    summary="SubTaskを取得する",
+    dependencies=[Depends(bind_subtask_id)],
+)
 async def get_subtask(
     todo_id: UUID,
     subtask_id: UUID,
@@ -69,7 +74,11 @@ async def get_subtask(
     )
 
 
-@router.put("/{subtask_id}", summary="SubTaskを更新する")
+@router.put(
+    "/{subtask_id}",
+    summary="SubTaskを更新する",
+    dependencies=[Depends(bind_subtask_id)],
+)
 async def update_subtask(
     todo_id: UUID,
     subtask_id: UUID,
@@ -91,6 +100,7 @@ async def update_subtask(
     "/{subtask_id}",
     summary="SubTaskを削除する",
     status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[Depends(bind_subtask_id)],
 )
 async def delete_subtask(
     todo_id: UUID,

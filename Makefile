@@ -1,4 +1,5 @@
-.PHONY: format mypy lint
+.PHONY: format mypy lint pytest
+all: format mypy pytest
 
 format:
 	docker compose exec app uv run ruff format app
@@ -10,4 +11,3 @@ mypy:
 pytest:
 	docker compose exec app uv run pytest -v
 
-lint: format mypy
