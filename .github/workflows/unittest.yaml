@@ -22,10 +22,9 @@ jobs:
         run: uv run ruff format --check app
 
       - name: Run ruff check
-        id: format
+        id: lint
         run: uv run ruff check app
 
       - name: Run mypy
-        id: format
+        id: mypy
         run: uv run mypy app
-
