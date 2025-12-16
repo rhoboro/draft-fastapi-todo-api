@@ -1,5 +1,7 @@
 from uuid import UUID, uuid4
 
+from fastapi import BackgroundTasks, UploadFile
+
 from app.database import AsyncSession
 from app.exceptions import NotFound
 from app.models import Status, Todo, TodoModel
@@ -78,3 +80,17 @@ class DeleteTodo:
             if not todo:
                 return
             await TodoModel.delete(session, todo)
+
+
+class ImportTodos:
+    def __init__(
+        self,
+        session: AsyncSession,
+        background_tasks: BackgroundTasks,
+    ) -> None:
+        self.session = session
+        self.background_tasks = background_tasks
+
+    async def execute(self, file: UploadFile) -> UUID:
+        operation_id = uuid4()
+        return operation_id

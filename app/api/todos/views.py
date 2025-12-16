@@ -1,7 +1,7 @@
 from typing import cast
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, UploadFile, status
 
 from app.api_route import LoggingRoute
 from app.context import bind_todo_id
@@ -10,6 +10,7 @@ from .schemas import (
     CreateTodoRequest,
     CreateTodoResponse,
     GetTodoResponse,
+    ImportTodosResponse,
     ListTodosResponse,
     UpdateTodoRequest,
     UpdateTodoResponse,
@@ -19,6 +20,7 @@ from .use_cases import (
     CreateTodo,
     DeleteTodo,
     GetTodo,
+    ImportTodos,
     ListTodos,
     UpdateTodo,
 )
@@ -98,6 +100,19 @@ async def delete_todo(
     use_case: DeleteTodo = Depends(DeleteTodo),
 ) -> None:
     await use_case.execute(todo_id=todo_id)
+
+
+@router.post(
+    "/import",
+    summary="CSVファイルからTodoを一括インポートする",
+)
+async def import_todos(
+    file: UploadFile,
+    use_case: ImportTodos = Depends(ImportTodos),
+) -> ImportTodosResponse:
+    return ImportTodosResponse(
+        operation_id=await use_case.execute(file)
+    )
 
 
 router.include_router(

@@ -15,7 +15,7 @@ FROM base AS local
 RUN --mount=type=cache,target=/app/.cache/uv \
     --mount=type=bind,source=uv.lock,target=uv.lock \
     --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
-    uv sync --frozen --group dev --no-install-project
+    uv sync --frozen --dev
 EXPOSE 8080
 CMD ["uv", "run", "fastapi", "dev", "--host", "0.0.0.0", "--port", "8080"]
 

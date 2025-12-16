@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from app.models import BaseSchema, Status, Todo
 
 
@@ -24,3 +26,7 @@ class UpdateTodoRequest(BaseSchema):
 
 class UpdateTodoResponse(Todo):
     pass
+
+
+class ImportTodosResponse(BaseSchema):
+    operation_id: UUID
