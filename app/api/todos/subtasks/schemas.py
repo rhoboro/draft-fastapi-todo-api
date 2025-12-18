@@ -1,11 +1,11 @@
-from app.models import BaseSchema, Status, SubTask
+from app.models import BaseModel, Status, SubTask
 
 
-class ListSubTasksResponse(BaseSchema):
+class ListSubTasksResponse(BaseModel):
     subtasks: list[SubTask]
 
 
-class CreateSubTaskRequest(BaseSchema):
+class CreateSubTaskRequest(BaseModel):
     title: str
 
 
@@ -17,7 +17,7 @@ class GetSubTaskResponse(SubTask):
     pass
 
 
-class UpdateSubTaskRequest(BaseSchema):
+class UpdateSubTaskRequest(BaseModel):
     title: str
     status: Status
 

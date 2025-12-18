@@ -1,13 +1,13 @@
 from uuid import UUID
 
-from app.models import BaseSchema, Status, Todo
+from app.models import BaseModel, Status, Todo
 
 
-class ListTodosResponse(BaseSchema):
+class ListTodosResponse(BaseModel):
     todos: list[Todo]
 
 
-class CreateTodoRequest(BaseSchema):
+class CreateTodoRequest(BaseModel):
     title: str
 
 
@@ -19,7 +19,7 @@ class GetTodoResponse(Todo):
     pass
 
 
-class UpdateTodoRequest(BaseSchema):
+class UpdateTodoRequest(BaseModel):
     title: str
     status: Status
 
@@ -28,5 +28,5 @@ class UpdateTodoResponse(Todo):
     pass
 
 
-class ImportTodosResponse(BaseSchema):
+class ImportTodosResponse(BaseModel):
     operation_id: UUID

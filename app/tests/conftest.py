@@ -12,9 +12,9 @@ from sqlalchemy.ext.asyncio import (
 )
 from sqlalchemy.orm import Session, SessionTransaction
 
+from app import db
 from app.database import async_engine, get_session
 from app.main import app
-from app.models import Base
 
 
 @pytest.fixture(scope="session")
@@ -74,7 +74,7 @@ async def setup_tables(
     # Mapped Classの定義からテーブルを作成
     async with engine.begin() as con:
         await con.run_sync(
-            lambda con_sync: Base.metadata.create_all(
+            lambda con_sync: db.Base.metadata.create_all(
                 con_sync.engine
             )
         )

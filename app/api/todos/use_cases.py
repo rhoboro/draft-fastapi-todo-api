@@ -2,9 +2,10 @@ from uuid import UUID, uuid4
 
 from fastapi import BackgroundTasks, UploadFile
 
+from app import db
 from app.database import AsyncSession
 from app.exceptions import NotFound
-from app.models import Status, Todo, TodoModel
+from app.models import Status, Todo
 
 
 class ListTodos:
@@ -15,7 +16,7 @@ class ListTodos:
         self,
     ) -> list[Todo]:
         async with self.session() as session:
-            todos = await TodoModel.get_all(session)
+            todos = await db.Todo.get_all(session)
             return [
                 Todo.model_validate(todo)
                 async for todo in todos
@@ -28,7 +29,7 @@ class CreateTodo:
 
     async def execute(self, title: str) -> Todo:
         async with self.session.begin() as session:
-            todo = await TodoModel.create(
+            todo = await db.Todo.create(
                 session,
                 todo_id=uuid4(),
                 title=title,
@@ -43,7 +44,7 @@ class GetTodo:
 
     async def execute(self, todo_id: UUID) -> Todo:
         async with self.session() as session:
-            todo = await TodoModel.get_by_id(session, todo_id)
+            todo = await db.Todo.get_by_id(session, todo_id)
             if not todo:
                 raise NotFound("Todo", todo_id)
             return Todo.model_validate(todo)
@@ -60,7 +61,7 @@ class UpdateTodo:
         status: Status,
     ) -> Todo:
         async with self.session.begin() as session:
-            todo = await TodoModel.get_by_id(session, todo_id)
+            todo = await db.Todo.get_by_id(session, todo_id)
             if not todo:
                 raise NotFound("Todo", todo_id)
             await todo.update(session, title, status)
@@ -76,10 +77,10 @@ class DeleteTodo:
         todo_id: UUID,
     ) -> None:
         async with self.session.begin() as session:
-            todo = await TodoModel.get_by_id(session, todo_id)
+            todo = await db.Todo.get_by_id(session, todo_id)
             if not todo:
                 return
-            await TodoModel.delete(session, todo)
+            await db.Todo.delete(session, todo)
 
 
 class ImportTodos:
