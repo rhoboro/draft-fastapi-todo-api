@@ -1,6 +1,12 @@
 from datetime import datetime
 
-from sqlalchemy import DateTime, Enum, MetaData, String
+from sqlalchemy import (
+    DateTime,
+    Enum,
+    Integer,
+    MetaData,
+    String,
+)
 from sqlalchemy.ext.asyncio import AsyncAttrs
 from sqlalchemy.orm import (
     DeclarativeBase,
@@ -10,7 +16,7 @@ from sqlalchemy.orm import (
 
 from app.utils.datetime import utcnow
 
-from .enums import Status
+from .enums import OperationStatus, OperationType, Status
 
 convention = {
     "pk": "pk_%(table_name)s",
@@ -31,6 +37,11 @@ type_map = {
     str_256: String(256),
     datetime: DateTime(timezone=True),
     Status: Enum(Status, native_enum=False),
+    OperationStatus: Enum(
+        OperationStatus,
+        name="operation_status",
+    ),
+    OperationType: Integer,
 }
 
 

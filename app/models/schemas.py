@@ -7,7 +7,7 @@ from pydantic import BeforeValidator, ConfigDict, Field
 
 from app.utils.datetime import to_utc
 
-from .enums import Status
+from .enums import OperationStatus, OperationType, Status
 
 UTCDatetime = Annotated[datetime, BeforeValidator(to_utc)]
 
@@ -30,4 +30,12 @@ class SubTask(BaseSchema):
     title: str = Field(min_length=1, max_length=256)
     status: Status
     todo_id: UUID
+    updated_at: UTCDatetime
+
+
+class Operation(BaseSchema):
+    operation_id: UUID
+    status: OperationStatus
+    operation_type: OperationType
+    reason: str = ""
     updated_at: UTCDatetime

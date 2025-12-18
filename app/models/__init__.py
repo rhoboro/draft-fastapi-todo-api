@@ -1,7 +1,9 @@
 from .base import Base
-from .enums import Status
+from .enums import OperationStatus, OperationType, Status
+from .operation import OperationModel
 from .schemas import (
     BaseSchema,
+    Operation,
     SubTask,
     Todo,
 )
@@ -16,4 +18,8 @@ __all__ = [
     "TodoModel",
     "SubTaskModel",
     "Base",
+    "Operation",
+    "OperationModel",
+    "OperationStatus",
+    "OperationType",
 ]
