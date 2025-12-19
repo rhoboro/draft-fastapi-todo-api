@@ -4,8 +4,9 @@ import pytest
 from httpx import AsyncClient
 from pytest_mock import MockerFixture
 
+from app import db
 from app.database import AsyncSession
-from app.models import Status, TodoModel
+from app.models import Status
 from app.utils.datetime import utcnow
 
 
@@ -68,7 +69,7 @@ async def test_create_todo(
 
     # レコードが追加されたことも確認
     async with test_session() as session:
-        record = await TodoModel.get_by_id(
+        record = await db.Todo.get_by_id(
             session, todo_id=todo_id
         )
         assert record is not None

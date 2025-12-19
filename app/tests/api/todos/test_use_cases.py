@@ -4,10 +4,11 @@ from uuid import UUID
 import pytest
 from pytest_mock import MockerFixture
 
+from app import db
 from app.api.todos.use_cases import CreateTodo, GetTodo
 from app.database import AsyncSession
 from app.exceptions import NotFound
-from app.models import Status, Todo, TodoModel
+from app.models import Status, Todo
 from app.utils.datetime import utcnow
 
 
@@ -75,7 +76,7 @@ class TestCreateTodo:
 
         # レコードが追加されたことも確認
         async with test_session() as session:
-            record = await TodoModel.get_by_id(
+            record = await db.Todo.get_by_id(
                 session, todo_id=todo_id
             )
             assert record is not None

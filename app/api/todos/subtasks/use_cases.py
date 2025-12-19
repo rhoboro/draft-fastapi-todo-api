@@ -1,8 +1,9 @@
 from uuid import UUID, uuid4
 
+from app import db
 from app.database import AsyncSession
 from app.exceptions import NotFound
-from app.models import Status, SubTask, SubTaskModel, TodoModel
+from app.models import Status, SubTask
 
 
 class ListSubTasks:
@@ -14,11 +15,11 @@ class ListSubTasks:
         todo_id: UUID,
     ) -> list[SubTask]:
         async with self.session() as session:
-            todo = await TodoModel.get_by_id(session, todo_id)
+            todo = await db.Todo.get_by_id(session, todo_id)
             if not todo:
                 raise NotFound("Todo", todo_id)
 
-            subtasks = await SubTaskModel.get_all_by_todo(
+            subtasks = await db.SubTask.get_all_by_todo(
                 session, todo
             )
             return [
@@ -35,11 +36,11 @@ class CreateSubTask:
         self, todo_id: UUID, title: str
     ) -> SubTask:
         async with self.session.begin() as session:
-            todo = await TodoModel.get_by_id(session, todo_id)
+            todo = await db.Todo.get_by_id(session, todo_id)
             if not todo:
                 raise NotFound("Todo", todo_id)
 
-            subtask = await SubTaskModel.create(
+            subtask = await db.SubTask.create(
                 session,
                 todo=todo,
                 subtask_id=uuid4(),
@@ -57,11 +58,11 @@ class GetSubTask:
         self, todo_id: UUID, subtask_id: UUID
     ) -> SubTask:
         async with self.session() as session:
-            todo = await TodoModel.get_by_id(session, todo_id)
+            todo = await db.Todo.get_by_id(session, todo_id)
             if not todo:
                 raise NotFound("Todo", todo_id)
 
-            subtask = await SubTaskModel.get_by_id(
+            subtask = await db.SubTask.get_by_id(
                 session, todo, subtask_id
             )
             if not subtask:
@@ -81,11 +82,11 @@ class UpdateSubTask:
         status: Status,
     ) -> SubTask:
         async with self.session.begin() as session:
-            todo = await TodoModel.get_by_id(session, todo_id)
+            todo = await db.Todo.get_by_id(session, todo_id)
             if not todo:
                 raise NotFound("Todo", todo_id)
 
-            subtask = await SubTaskModel.get_by_id(
+            subtask = await db.SubTask.get_by_id(
                 session, todo, subtask_id
             )
             if not subtask:
@@ -110,12 +111,12 @@ class DeleteSubTask:
         subtask_id: UUID,
     ) -> None:
         async with self.session.begin() as session:
-            todo = await TodoModel.get_by_id(session, todo_id)
+            todo = await db.Todo.get_by_id(session, todo_id)
             if not todo:
                 raise NotFound("Todo", todo_id)
-            subtask = await SubTaskModel.get_by_id(
+            subtask = await db.SubTask.get_by_id(
                 session, todo, subtask_id
             )
             if not subtask:
                 return
-            await SubTaskModel.delete(session, subtask)
+            await db.SubTask.delete(session, subtask)
