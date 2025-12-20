@@ -1,4 +1,4 @@
-from collections.abc import AsyncIterator
+from collections.abc import AsyncIterator, Iterable
 from typing import TYPE_CHECKING, Self
 from uuid import UUID
 
@@ -17,6 +17,21 @@ from .base import Base, str_256
 
 if TYPE_CHECKING:
     from app.db.subtask import SubTask
+
+from typing import TypedDict
+from uuid import uuid4
+
+from sqlalchemy import insert
+
+from app.utils import get_chunk
+
+
+class BulkCreateParam(TypedDict):
+    title: str
+    status: Status
+
+
+BULK_SIZE_LIMIT = 100
 
 
 class Todo(Base):
@@ -87,3 +102,47 @@ class Todo(Base):
     ) -> None:
         await session.delete(todo)
         await session.flush()
+
+    @classmethod
+    async def bulk_create(
+        cls,
+        session: AsyncSession,
+        todos: Iterable[BulkCreateParam],
+    ) -> list[Self]:
+        # https://docs.sqlalchemy.org/en/20/orm/persistence_techniques.html#using-insert-update-and-on-conflict-i-e-upsert-to-return-orm-objects
+        return [
+            records
+            for chunk in get_chunk(todos, n=BULK_SIZE_LIMIT)
+            for records in await cls._bulk_create(
+                session, chunk
+            )
+        ]
+
+    @classmethod
+    async def _bulk_create(
+        cls,
+        session: AsyncSession,
+        todos: Iterable[BulkCreateParam],
+    ) -> list[Self]:
+        new_todo_dict = [
+            {
+                "todo_id": uuid4(),
+                "title": todo["title"],
+                "status": todo["status"],
+            }
+            for todo in todos
+        ]
+        stmt = (
+            insert(cls)
+            .values(new_todo_dict)
+            .returning(cls)
+            .execution_options(populate_existing=True)
+        )
+        return [
+            todo
+            for todo in (
+                (await session.execute(stmt))
+                .unique()
+                .scalars()
+            )
+        ]

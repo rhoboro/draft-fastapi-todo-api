@@ -1,11 +1,18 @@
+import csv
+from io import TextIOWrapper
 from uuid import UUID, uuid4
 
 from fastapi import BackgroundTasks, UploadFile
 
 from app import db
 from app.database import AsyncSession
-from app.exceptions import NotFound
-from app.models import Status, Todo
+from app.exceptions import FileTooLarge, NotFound
+from app.models import (
+    OperationStatus,
+    OperationType,
+    Status,
+    Todo,
+)
 
 
 class ListTodos:
@@ -84,6 +91,8 @@ class DeleteTodo:
 
 
 class ImportTodos:
+    MAX_FILE_SIZE = 5 * 1024 * 1024
+
     def __init__(
         self,
         session: AsyncSession,
@@ -94,4 +103,89 @@ class ImportTodos:
 
     async def execute(self, file: UploadFile) -> UUID:
         operation_id = uuid4()
+        async with self.session.begin() as session:
+            await db.Operation.create(
+                session,
+                operation_id=operation_id,
+                operation_type=OperationType.IMPORT_TODOS,
+            )
+
+        self.background_tasks.add_task(
+            self._import_operation,
+            operation_id=operation_id,
+            file=file,
+        )
         return operation_id
+
+    async def _import_operation(
+        self,
+        operation_id: UUID,
+        file: UploadFile,
+    ) -> None:
+        try:
+            # 処理の開始
+            await self._update_operation(
+                operation_id,
+                OperationStatus.STARTED,
+            )
+            # ここでインポート処理
+            await self.import_todo(file)
+        except Exception as e:
+            # エラー発生時
+            await self._update_operation(
+                operation_id,
+                OperationStatus.ERROR,
+                reason=str(e),
+            )
+        else:
+            # 正常終了時
+            await self._update_operation(
+                operation_id,
+                OperationStatus.COMPLETED,
+            )
+
+    async def _update_operation(
+        self,
+        operation_id: UUID,
+        status: OperationStatus,
+        reason: str = "",
+    ) -> None:
+        async with self.session.begin() as session:
+            op = await db.Operation.get_by_id(
+                session,
+                operation_id=operation_id,
+            )
+            if not op:
+                raise NotFound("Operation", operation_id)
+
+            await op.update(
+                session,
+                status=status,
+                reason=reason,
+            )
+
+    async def import_todo(
+        self, file: UploadFile
+    ) -> list[db.Todo]:
+        # 実際のファイルサイズをチェック
+        await file.seek(self.MAX_FILE_SIZE)
+        if await file.read(1):
+            raise FileTooLarge("5MB")
+        await file.seek(0)
+
+        reader = csv.DictReader(
+            TextIOWrapper(file.file, encoding="utf-8"),
+            fieldnames=["title", "status"],
+        )
+        # ヘッダーをスキップ
+        next(reader)
+
+        async with self.session.begin() as session:
+            data = (
+                db.BulkCreateParam(
+                    title=row["title"],
+                    status=Status(row["status"]),
+                )
+                for row in reader
+            )
+            return await db.Todo.bulk_create(session, data)

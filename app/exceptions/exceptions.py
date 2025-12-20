@@ -24,3 +24,11 @@ class NotFound(AppException):
         self, resource: str, resource_id: UUID
     ) -> None:
         super().__init__({resource: str(resource_id)})
+
+
+class FileTooLarge(AppException):
+    status_code: int = 400
+    message: str = "The file size cannot exceed %s"
+
+    def __init__(self, max_size: str) -> None:
+        super().__init__(message=self.message.format(max_size))

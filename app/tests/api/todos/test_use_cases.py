@@ -1,11 +1,17 @@
+import io
 from datetime import datetime
 from uuid import UUID
 
 import pytest
+from fastapi import BackgroundTasks, UploadFile
 from pytest_mock import MockerFixture
 
 from app import db
-from app.api.todos.use_cases import CreateTodo, GetTodo
+from app.api.todos.use_cases import (
+    CreateTodo,
+    GetTodo,
+    ImportTodos,
+)
 from app.database import AsyncSession
 from app.exceptions import NotFound
 from app.models import Status, Todo
@@ -85,3 +91,58 @@ class TestCreateTodo:
             assert record.created_at == datetime_now
             assert record.updated_at == datetime_now
             assert await record.awaitable_attrs.subtasks == []
+
+
+@pytest.mark.anyio
+@pytest.mark.usefixtures("setup_common_dataset")
+class TestImportTodos:
+    async def test_import_todos(
+        self,
+        test_session: AsyncSession,
+    ) -> None:
+        use_case = ImportTodos(
+            session=test_session,
+            background_tasks=BackgroundTasks(),
+        )
+        file = UploadFile(
+            io.BytesIO(
+                """title,status
+Todo 1,NEW
+Todo 2,IN_PROGRESS
+""".encode("utf-8")
+            ),
+        )
+        actual = await use_case.import_todo(file)
+        assert len(actual) == 2
+        assert actual[0].title == "Todo 1"
+        assert actual[0].status == Status.NEW
+        assert actual[1].title == "Todo 2"
+        assert actual[1].status == Status.IN_PROGRESS
+
+    async def test_import_todos_chunk(
+        self,
+        test_session: AsyncSession,
+        mocker: MockerFixture,
+    ) -> None:
+        mocker.patch("app.db.todo.BULK_SIZE_LIMIT", 2)
+        use_case = ImportTodos(
+            session=test_session,
+            background_tasks=BackgroundTasks(),
+        )
+        file = UploadFile(
+            io.BytesIO(
+                """title,status
+Todo 1,NEW
+Todo 2,IN_PROGRESS
+Todo 3,COMPLETED
+""".encode("utf-8")
+            ),
+        )
+        actual = await use_case.import_todo(file)
+        assert len(actual) == 3
+        assert actual[0].title == "Todo 1"
+        assert actual[0].status == Status.NEW
+        assert actual[1].title == "Todo 2"
+        assert actual[1].status == Status.IN_PROGRESS
+        assert actual[2].title == "Todo 3"
+        assert actual[2].status == Status.COMPLETED
