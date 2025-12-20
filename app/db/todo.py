@@ -132,17 +132,10 @@ class Todo(Base):
             }
             for todo in todos
         ]
-        stmt = (
-            insert(cls)
-            .values(new_todo_dict)
-            .returning(cls)
-            .execution_options(populate_existing=True)
-        )
+        stmt = insert(cls).values(new_todo_dict).returning(cls)
         return [
             todo
             for todo in (
-                (await session.execute(stmt))
-                .unique()
-                .scalars()
+                (await session.execute(stmt)).scalars()
             )
         ]
