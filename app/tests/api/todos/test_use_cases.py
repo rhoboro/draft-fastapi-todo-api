@@ -1,10 +1,11 @@
 import io
+from asyncio import TaskGroup
 from datetime import datetime
 from uuid import UUID
 
-import httpx
 import pytest
 from fastapi import BackgroundTasks, UploadFile
+from httpx import AsyncClient
 from pytest_mock import MockerFixture
 
 from app import db
@@ -105,7 +106,7 @@ class TestImportTodos:
         use_case = ImportTodos(
             session=test_session,
             background_tasks=BackgroundTasks(),
-            webhook=WebhookClient(httpx.AsyncClient()),
+            webhook=WebhookClient(AsyncClient(), TaskGroup()),
         )
         file = UploadFile(
             io.BytesIO(
@@ -131,7 +132,7 @@ Todo 2,IN_PROGRESS
         use_case = ImportTodos(
             session=test_session,
             background_tasks=BackgroundTasks(),
-            webhook=WebhookClient(httpx.AsyncClient()),
+            webhook=WebhookClient(AsyncClient(), TaskGroup()),
         )
         file = UploadFile(
             io.BytesIO(

@@ -175,6 +175,7 @@ class ImportTodos:
             from_status=from_status,
             to_status=status,
             logger=self.logger,
+            in_background=True,
         )
 
     async def import_todo(
