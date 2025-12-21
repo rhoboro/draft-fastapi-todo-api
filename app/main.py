@@ -3,12 +3,13 @@ from fastapi.responses import JSONResponse
 
 from app.api_route import LoggingRoute
 from app.exceptions import init_exception_handler
+from app.lifespan import lifespan
 from app.log import init_log
 from app.middlewares import init_middlewares
 
 from .api import router as api_router
 
-app = FastAPI(title="fastapi-todo-api")
+app = FastAPI(title="fastapi-todo-api", lifespan=lifespan)
 app.router.route_class = LoggingRoute
 
 init_log()
