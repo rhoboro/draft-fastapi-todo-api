@@ -3,8 +3,10 @@ from io import TextIOWrapper
 from uuid import UUID, uuid4
 
 from fastapi import BackgroundTasks, UploadFile
+from structlog import get_logger
 
 from app import db
+from app.api.todos.webhook import WebhookClient
 from app.database import AsyncSession
 from app.exceptions import FileTooLarge, NotFound
 from app.models import (
@@ -97,9 +99,12 @@ class ImportTodos:
         self,
         session: AsyncSession,
         background_tasks: BackgroundTasks,
+        webhook: WebhookClient,
     ) -> None:
         self.session = session
         self.background_tasks = background_tasks
+        self.webhook = webhook
+        self.logger = get_logger(__name__)
 
     async def execute(self, file: UploadFile) -> UUID:
         operation_id = uuid4()
@@ -158,11 +163,20 @@ class ImportTodos:
             if not op:
                 raise NotFound("Operation", operation_id)
 
+            from_status = op.status
             await op.update(
                 session,
                 status=status,
                 reason=reason,
             )
+
+        await self.webhook.send(
+            operation_id,
+            from_status=from_status,
+            to_status=status,
+            logger=self.logger,
+            in_background=True,
+        )
 
     async def import_todo(
         self, file: UploadFile
