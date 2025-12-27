@@ -12,4 +12,5 @@ UTCDatetime = Annotated[datetime, BeforeValidator(to_utc)]
 class BaseModel(_BaseModel):
     model_config = ConfigDict(
         from_attributes=True,
+        frozen=True,
     )
