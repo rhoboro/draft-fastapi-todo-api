@@ -16,7 +16,7 @@ init_log()
 init_exception_handler(app)
 init_middlewares(app)
 
-app.include_router(api_router)
+app.include_router(api_router, prefix="/api")
 
 
 # APIドキュメントには含めない
