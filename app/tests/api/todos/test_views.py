@@ -15,7 +15,7 @@ from app.utils.datetime import utcnow
 async def test_list_todos(
     ac: AsyncClient,
 ) -> None:
-    response = await ac.get("/todos")
+    response = await ac.get("/api/todos")
     actual = response.json()
     assert actual == {
         "todos": [
@@ -56,7 +56,7 @@ async def test_create_todo(
     )
 
     response = await ac.post(
-        "/todos", json={"title": "new todo"}
+        "/api/todos", json={"title": "new todo"}
     )
     actual = response.json()
     assert actual == {
@@ -87,7 +87,7 @@ async def test_update_todo_not_found(
 ) -> None:
     todo_id = "00000000-0000-0000-0000-000000000000"
     response = await ac.put(
-        f"/todos/{todo_id}",
+        f"/api/todos/{todo_id}",
         json={
             "title": "new todo",
             "status": "IN_PROGRESS",
