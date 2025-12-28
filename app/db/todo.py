@@ -8,7 +8,6 @@ from sqlalchemy.orm import (
     Mapped,
     mapped_column,
     relationship,
-    selectinload,
 )
 
 from app.models import Status
@@ -52,7 +51,6 @@ class Todo(Base):
     ) -> AsyncIterator[Self]:
         stmt = (
             select(cls)
-            .options(selectinload(cls.subtasks))
             .order_by(desc(cls.created_at))
         )
         return await session.stream_scalars(stmt)
