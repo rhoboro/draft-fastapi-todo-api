@@ -1,10 +1,13 @@
 from uuid import UUID
 
+from pydantic import Field
+
 from app.models import BaseModel, Status, Todo
+from app.pager import Pager
 
 
-class ListTodosResponse(BaseModel):
-    todos: list[Todo]
+class ListTodosResponse(Pager[Todo]):
+    items: list[Todo] = Field(serialization_alias="todos")
 
 
 class CreateTodoRequest(BaseModel):
