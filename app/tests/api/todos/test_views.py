@@ -18,6 +18,9 @@ async def test_list_todos(
     response = await ac.get("/api/todos")
     actual = response.json()
     assert actual == {
+        "count": 3,
+        "next": None,
+        "previous": None,
         "todos": [
             {
                 "status": "NEW",
@@ -37,7 +40,7 @@ async def test_list_todos(
                 "todo_id": "8940b5c4-57ac-4e38-8af4-82a510738717",  # noqa: E501
                 "updated_at": "2025-12-14T10:20:30.839088Z",
             },
-        ]
+        ],
     }
 
 

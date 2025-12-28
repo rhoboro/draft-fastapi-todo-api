@@ -1,10 +1,17 @@
-from typing import cast
+from typing import Annotated, cast
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, UploadFile, status
+from fastapi import (
+    APIRouter,
+    Depends,
+    Query,
+    UploadFile,
+    status,
+)
 
 from app.api_route import LoggingRoute
 from app.context import bind_todo_id
+from app.pager import LimitOffset
 
 from .schemas import (
     CreateTodoRequest,
@@ -33,10 +40,12 @@ router = APIRouter(
 
 @router.get("", summary="Todoの一覧を取得する")
 async def list_todos(
+    limit_offset: Annotated[LimitOffset, Query()],
     use_case: ListTodos = Depends(ListTodos),
 ) -> ListTodosResponse:
-    return ListTodosResponse(
-        todos=[todo for todo in await use_case.execute()]
+    return cast(
+        ListTodosResponse,
+        await use_case.execute(limit_offset),
     )
 
 

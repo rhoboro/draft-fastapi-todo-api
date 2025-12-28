@@ -2,7 +2,7 @@ from collections.abc import AsyncIterator, Iterable
 from typing import TYPE_CHECKING, Self
 from uuid import UUID
 
-from sqlalchemy import desc, select
+from sqlalchemy import Select, desc, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import (
     Mapped,
@@ -46,13 +46,15 @@ class Todo(Base):
     )
 
     @classmethod
+    def stmt_get_all(cls) -> Select[tuple[Self]]:
+        stmt = select(cls).order_by(desc(cls.created_at))
+        return stmt
+
+    @classmethod
     async def get_all(
         cls, session: AsyncSession
     ) -> AsyncIterator[Self]:
-        stmt = (
-            select(cls)
-            .order_by(desc(cls.created_at))
-        )
+        stmt = cls.stmt_get_all()
         return await session.stream_scalars(stmt)
 
     @classmethod

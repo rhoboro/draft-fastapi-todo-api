@@ -15,6 +15,7 @@ from app.models import (
     Status,
     Todo,
 )
+from app.pager import LimitOffset, Pager
 
 
 class ListTodos:
@@ -22,14 +23,24 @@ class ListTodos:
         self.session = session
 
     async def execute(
-        self,
-    ) -> list[Todo]:
+        self, limit_offset: LimitOffset
+    ) -> Pager[Todo]:
         async with self.session() as session:
-            todos = await db.Todo.get_all(session)
-            return [
-                Todo.model_validate(todo)
-                async for todo in todos
-            ]
+            query = db.Todo.stmt_get_all()
+
+            def transformer(
+                todos: list[db.Todo],
+            ) -> list[Todo]:
+                return [
+                    Todo.model_validate(todo) for todo in todos
+                ]
+
+            return await Pager.paginate(
+                session=session,
+                query=query,
+                limit_offset=limit_offset,
+                transformer=transformer,
+            )
 
 
 class CreateTodo:
