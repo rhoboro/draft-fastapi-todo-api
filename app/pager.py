@@ -103,7 +103,7 @@ async def _fetch_items(
         stmt = stmt.offset(offset)
     if limit:
         stmt = stmt.limit(limit)
-    items = (await session.execute(stmt)).scalars()
+    items = (await session.execute(stmt)).scalars().unique()
     return list(items)
 
 
