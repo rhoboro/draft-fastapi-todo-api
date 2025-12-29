@@ -4,7 +4,6 @@ from uuid import UUID
 from fastapi import (
     APIRouter,
     Depends,
-    Query,
     UploadFile,
     status,
 )
@@ -40,7 +39,7 @@ router = APIRouter(
 
 @router.get("", summary="Todoの一覧を取得する")
 async def list_todos(
-    limit_offset: Annotated[LimitOffset, Query()],
+    limit_offset: Annotated[LimitOffset, Depends(LimitOffset)],
     use_case: ListTodos = Depends(ListTodos),
 ) -> ListTodosResponse:
     return cast(

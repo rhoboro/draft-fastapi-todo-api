@@ -1,9 +1,11 @@
 from typing import (
+    Annotated,
     Callable,
     Self,
     TypeVar,
 )
 
+from fastapi import Query
 from pydantic import BaseModel, Field
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -12,10 +14,8 @@ from sqlalchemy.sql import Select
 
 
 class LimitOffset(BaseModel):
-    limit: int = Field(
-        0, ge=0, description="0なら最後まで取得"
-    )
-    offset: int = Field(0, description="データ取得開始位置")
+    limit: Annotated[int, Query(ge=0)] = 0
+    offset: Annotated[int, Query(ge=0)] = 0
 
 
 U = TypeVar("U", bound=DeclarativeBase)
