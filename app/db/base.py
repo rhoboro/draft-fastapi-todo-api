@@ -58,3 +58,13 @@ class Base(AsyncAttrs, DeclarativeBase):
     updated_at: Mapped[datetime] = mapped_column(
         default=utcnow, onupdate=utcnow
     )
+
+    def __repr__(self) -> str:
+        columns = ", ".join(
+            [
+                f"{k}={repr(v)}"
+                for k, v in self.__dict__.items()
+                if not k.startswith("_")
+            ]
+        )
+        return f"<{self.__class__.__name__}({columns})>"
