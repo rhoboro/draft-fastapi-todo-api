@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import (
     Mapped,
     mapped_column,
+    noload,
     relationship,
 )
 
@@ -132,7 +133,12 @@ class Todo(Base):
             }
             for todo in todos
         ]
-        stmt = insert(cls).values(new_todo_dict).returning(cls)
+        stmt = (
+            insert(cls)
+            .values(new_todo_dict)
+            .options(noload(cls.subtasks))
+            .returning(cls)
+        )
         return [
             todo
             for todo in (

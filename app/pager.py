@@ -103,7 +103,8 @@ async def _fetch_items(
         stmt = stmt.offset(offset)
     if limit:
         stmt = stmt.limit(limit)
-    items = (await session.execute(stmt)).scalars().unique()
+    # joinedload の可能性もあるため unique() を呼ぶ
+    items = (await session.execute(stmt)).unique().scalars()
     return list(items)
 
 
