@@ -4,6 +4,7 @@ from uuid import UUID
 from fastapi import (
     APIRouter,
     Depends,
+    Query,
     UploadFile,
     status,
 )
@@ -39,12 +40,18 @@ router = APIRouter(
 
 @router.get("", summary="Todoの一覧を取得する")
 async def list_todos(
-    limit_offset: Annotated[LimitOffset, Depends(LimitOffset)],
     use_case: ListTodos = Depends(ListTodos),
+    limit: Annotated[
+        int, Query(ge=0, description="0なら最後まで取得")
+    ] = 0,
+    offset: Annotated[
+        int, Query(ge=0, description="データ取得の開始位置")
+    ] = 0,
 ) -> ListTodosResponse:
+    limit_offset = LimitOffset(limit=limit, offset=offset)
     return cast(
         ListTodosResponse,
-        await use_case.execute(limit_offset),
+        await use_case.execute(limit_offset=limit_offset),
     )
 
 
