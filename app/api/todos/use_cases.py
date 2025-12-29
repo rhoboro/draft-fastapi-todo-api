@@ -26,10 +26,14 @@ class ListTodos:
     async def execute(
         self,
         limit_offset: LimitOffset,
+        min_subtasks: int,
         include_subtasks: bool,
     ) -> Pager[TodoWithSubTasks]:
         async with self.session() as session:
-            query = db.Todo.stmt_get_all(include_subtasks)
+            query = db.Todo.stmt_get_all(
+                min_subtasks,
+                include_subtasks,
+            )
 
             def transformer(
                 todos: list[db.Todo],
@@ -45,6 +49,7 @@ class ListTodos:
                             todo_id=todo.todo_id,
                             title=todo.title,
                             status=todo.status,
+                            subtask_count=todo.subtask_count,
                             updated_at=todo.updated_at,
                             subtasks=None,
                         )

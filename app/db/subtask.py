@@ -11,7 +11,7 @@ from app.models import Status
 from .base import Base, str_256
 
 if TYPE_CHECKING:
-    from app.db.todo import Todo
+    from .todo import Todo
 
 
 class SubTask(Base):

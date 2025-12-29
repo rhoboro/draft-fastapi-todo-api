@@ -39,6 +39,7 @@ class TestGetTodo:
             todo_id=todo_id,
             title="Todo 1",
             status=Status.NEW,
+            subtask_count=1,
             updated_at=common_dataset_datetime,
         )
         assert actual == expected
@@ -79,6 +80,7 @@ class TestCreateTodo:
             todo_id=todo_id,
             title="new todo",
             status=Status.NEW,
+            subtask_count=0,
             updated_at=datetime_now,
         )
         assert actual == expected

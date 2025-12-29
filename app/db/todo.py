@@ -1,11 +1,12 @@
 from collections.abc import AsyncIterator, Iterable
-from typing import TYPE_CHECKING, Self
-from uuid import UUID
+from typing import Self, TypedDict
+from uuid import UUID, uuid4
 
-from sqlalchemy import Select, desc, select
+from sqlalchemy import Select, desc, func, insert, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import (
     Mapped,
+    column_property,
     joinedload,
     mapped_column,
     noload,
@@ -13,18 +14,10 @@ from sqlalchemy.orm import (
 )
 
 from app.models import Status
+from app.utils import get_chunk
 
 from .base import Base, str_256
-
-if TYPE_CHECKING:
-    from app.db.subtask import SubTask
-
-from typing import TypedDict
-from uuid import uuid4
-
-from sqlalchemy import insert
-
-from app.utils import get_chunk
+from .subtask import SubTask
 
 
 class BulkCreateParam(TypedDict):
@@ -47,20 +40,36 @@ class Todo(Base):
         cascade="delete, delete-orphan",
     )
 
+    subtask_count = column_property(
+        select(func.count(SubTask.subtask_id))
+        .where(SubTask.todo_id == todo_id)
+        .correlate_except(SubTask)
+        .scalar_subquery()
+    )
+
     @classmethod
     def stmt_get_all(
-        cls, include_subtasks: bool
+        cls,
+        min_subtasks: int,
+        include_subtasks: bool,
     ) -> Select[tuple[Self]]:
         stmt = select(cls).order_by(desc(cls.created_at))
+        if min_subtasks:
+            stmt = stmt.filter(
+                cls.subtask_count >= min_subtasks
+            )
         if include_subtasks:
             stmt = stmt.options(joinedload(cls.subtasks))
         return stmt
 
     @classmethod
     async def get_all(
-        cls, session: AsyncSession, include_subtasks: bool
+        cls,
+        session: AsyncSession,
+        min_subtasks: int,
+        include_subtasks: bool,
     ) -> AsyncIterator[Self]:
-        stmt = cls.stmt_get_all(include_subtasks)
+        stmt = cls.stmt_get_all(min_subtasks, include_subtasks)
         return await session.stream_scalars(stmt)
 
     @classmethod
@@ -89,6 +98,7 @@ class Todo(Base):
         )
         session.add(todo)
         await session.flush()
+        await session.refresh(todo)
         return todo
 
     async def update(

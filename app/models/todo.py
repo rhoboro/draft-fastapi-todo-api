@@ -12,6 +12,7 @@ class Todo(BaseModel):
     title: str = Field(min_length=1, max_length=256)
     status: Status
     updated_at: UTCDatetime
+    subtask_count: int
 
 
 class TodoWithSubTasks(Todo):
