@@ -14,6 +14,7 @@ from app.models import (
     OperationType,
     Status,
     Todo,
+    TodoWithSubTasks,
 )
 from app.pager import LimitOffset, Pager
 
@@ -23,17 +24,32 @@ class ListTodos:
         self.session = session
 
     async def execute(
-        self, limit_offset: LimitOffset
-    ) -> Pager[Todo]:
+        self,
+        limit_offset: LimitOffset,
+        include_subtasks: bool,
+    ) -> Pager[TodoWithSubTasks]:
         async with self.session() as session:
-            query = db.Todo.stmt_get_all()
+            query = db.Todo.stmt_get_all(include_subtasks)
 
             def transformer(
                 todos: list[db.Todo],
-            ) -> list[Todo]:
-                return [
-                    Todo.model_validate(todo) for todo in todos
-                ]
+            ) -> list[TodoWithSubTasks]:
+                if include_subtasks:
+                    return [
+                        TodoWithSubTasks.model_validate(todo)
+                        for todo in todos
+                    ]
+                else:
+                    return [
+                        TodoWithSubTasks(
+                            todo_id=todo.todo_id,
+                            title=todo.title,
+                            status=todo.status,
+                            updated_at=todo.updated_at,
+                            subtasks=None,
+                        )
+                        for todo in todos
+                    ]
 
             return await Pager.paginate(
                 session=session,

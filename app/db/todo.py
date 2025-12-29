@@ -6,6 +6,7 @@ from sqlalchemy import Select, desc, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import (
     Mapped,
+    joinedload,
     mapped_column,
     noload,
     relationship,
@@ -47,15 +48,19 @@ class Todo(Base):
     )
 
     @classmethod
-    def stmt_get_all(cls) -> Select[tuple[Self]]:
+    def stmt_get_all(
+        cls, include_subtasks: bool
+    ) -> Select[tuple[Self]]:
         stmt = select(cls).order_by(desc(cls.created_at))
+        if include_subtasks:
+            stmt = stmt.options(joinedload(cls.subtasks))
         return stmt
 
     @classmethod
     async def get_all(
-        cls, session: AsyncSession
+        cls, session: AsyncSession, include_subtasks: bool
     ) -> AsyncIterator[Self]:
-        stmt = cls.stmt_get_all()
+        stmt = cls.stmt_get_all(include_subtasks)
         return await session.stream_scalars(stmt)
 
     @classmethod

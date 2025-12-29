@@ -47,11 +47,15 @@ async def list_todos(
     offset: Annotated[
         int, Query(ge=0, description="データ取得の開始位置")
     ] = 0,
+    include_subtasks: Annotated[bool, Query()] = False,
 ) -> ListTodosResponse:
     limit_offset = LimitOffset(limit=limit, offset=offset)
     return cast(
         ListTodosResponse,
-        await use_case.execute(limit_offset=limit_offset),
+        await use_case.execute(
+            limit_offset=limit_offset,
+            include_subtasks=include_subtasks,
+        ),
     )
 
 
