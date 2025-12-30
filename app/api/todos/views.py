@@ -30,6 +30,7 @@ from .use_cases import (
     GetTodo,
     ImportTodos,
     ListTodos,
+    ListTodosFilter,
     UpdateTodo,
 )
 
@@ -39,17 +40,26 @@ router = APIRouter(
 )
 
 
+async def _get_filter(
+    min_subtasks: Annotated[int, Query(ge=0)] = 0,
+) -> ListTodosFilter:
+    return ListTodosFilter(min_subtasks=min_subtasks)
+
+
+FilterQuery = Annotated[ListTodosFilter, Depends(_get_filter)]
+
+
 @router.get("", summary="Todoの一覧を取得する")
 async def list_todos(
     limit_offset: LimitOffsetQuery,
+    filter_: Annotated[ListTodosFilter, Depends(_get_filter)],
     use_case: ListTodos = Depends(ListTodos),
-    min_subtasks: Annotated[int, Query(ge=0)] = 0,
     include_subtasks: Annotated[bool, Query()] = False,
 ) -> ListTodosResponse | ListTodoWithSubTasksResponse:
     if include_subtasks:
         with_subtasks = await use_case.execute(
             limit_offset=limit_offset,
-            min_subtasks=min_subtasks,
+            filter_=filter_,
             include_subtasks=True,
         )
         return ListTodoWithSubTasksResponse.model_validate(
@@ -59,7 +69,7 @@ async def list_todos(
     else:
         no_subtask = await use_case.execute(
             limit_offset=limit_offset,
-            min_subtasks=min_subtasks,
+            filter_=filter_,
             include_subtasks=False,
         )
         return ListTodosResponse.model_validate(no_subtask)

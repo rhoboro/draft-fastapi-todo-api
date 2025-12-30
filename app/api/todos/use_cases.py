@@ -11,6 +11,7 @@ from app.api.todos.webhook import WebhookClient
 from app.database import AsyncSession
 from app.exceptions import FileTooLarge, NotFound
 from app.models import (
+    BaseModel,
     OperationStatus,
     OperationType,
     Status,
@@ -18,6 +19,10 @@ from app.models import (
     TodoWithSubTasks,
 )
 from app.pager import LimitOffset, Pager
+
+
+class ListTodosFilter(BaseModel):
+    min_subtasks: int
 
 
 class ListTodos:
@@ -28,7 +33,7 @@ class ListTodos:
     async def execute(
         self,
         limit_offset: LimitOffset,
-        min_subtasks: int,
+        filter_: ListTodosFilter,
         include_subtasks: Literal[True],
     ) -> Pager[TodoWithSubTasks]: ...
 
@@ -36,19 +41,19 @@ class ListTodos:
     async def execute(
         self,
         limit_offset: LimitOffset,
-        min_subtasks: int,
+        filter_: ListTodosFilter,
         include_subtasks: Literal[False],
     ) -> Pager[Todo]: ...
 
     async def execute(
         self,
         limit_offset: LimitOffset,
-        min_subtasks: int,
+        filter_: ListTodosFilter,
         include_subtasks: bool,
     ) -> Pager[Todo] | Pager[TodoWithSubTasks]:
         async with self.session() as session:
             query = db.Todo.stmt_get_all(
-                min_subtasks,
+                filter_.min_subtasks,
                 include_subtasks,
             )
 
