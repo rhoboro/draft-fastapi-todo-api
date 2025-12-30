@@ -16,6 +16,4 @@ class Todo(BaseModel):
 
 
 class TodoWithSubTasks(Todo):
-    subtasks: list[SubTask] | None = Field(
-        None, description="取得していない場合はNone"
-    )
+    subtasks: list[SubTask]
