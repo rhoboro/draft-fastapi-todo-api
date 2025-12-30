@@ -1,17 +1,31 @@
-from collections.abc import AsyncIterator
-from typing import TYPE_CHECKING, Self
-from uuid import UUID
+from collections.abc import AsyncIterator, Iterable
+from typing import TYPE_CHECKING, Self, TypedDict
+from uuid import UUID, uuid4
 
-from sqlalchemy import ForeignKey, asc, select
+from sqlalchemy import ForeignKey, asc, insert, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import (
+    Mapped,
+    mapped_column,
+    relationship,
+)
 
 from app.models import Status
+from app.utils import get_chunk
 
 from .base import Base, str_256
 
 if TYPE_CHECKING:
     from .todo import Todo
+
+
+class BulkSubTaskCreateParam(TypedDict):
+    todo_id: UUID
+    title: str
+    status: Status
+
+
+BULK_SIZE_LIMIT = 100
 
 
 class SubTask(Base):
@@ -92,3 +106,42 @@ class SubTask(Base):
     ) -> None:
         await session.delete(subtask)
         await session.flush()
+
+    @classmethod
+    async def bulk_create(
+        cls,
+        session: AsyncSession,
+        subtasks: Iterable[BulkSubTaskCreateParam],
+    ) -> list[Self]:
+        return [
+            records
+            for chunk in get_chunk(subtasks, n=BULK_SIZE_LIMIT)
+            for records in await cls._bulk_create(
+                session, chunk
+            )
+        ]
+
+    @classmethod
+    async def _bulk_create(
+        cls,
+        session: AsyncSession,
+        subtasks: Iterable[BulkSubTaskCreateParam],
+    ) -> list[Self]:
+        new_subtask_dict = [
+            {
+                "subtask_id": uuid4(),
+                "todo_id": subtask["todo_id"],
+                "title": subtask["title"],
+                "status": subtask["status"],
+            }
+            for subtask in subtasks
+        ]
+        stmt = (
+            insert(cls).values(new_subtask_dict).returning(cls)
+        )
+        return [
+            subtask
+            for subtask in (
+                (await session.execute(stmt)).scalars()
+            )
+        ]

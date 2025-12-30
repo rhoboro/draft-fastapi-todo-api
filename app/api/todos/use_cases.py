@@ -139,6 +139,12 @@ class ImportTodos:
         self.logger = get_logger(__name__)
 
     async def execute(self, file: UploadFile) -> UUID:
+        # 実ファイルサイズをチェック
+        await file.seek(self.MAX_FILE_SIZE)
+        if await file.read(1):
+            raise FileTooLarge("5MB")
+        await file.seek(0)
+
         operation_id = uuid4()
         async with self.session.begin() as session:
             await db.Operation.create(
@@ -166,7 +172,7 @@ class ImportTodos:
                 OperationStatus.STARTED,
             )
             # ここでインポート処理
-            await self.import_todo(file)
+            await self.import_todos(file)
         except Exception as e:
             # エラー発生時
             await self._update_operation(
@@ -210,28 +216,62 @@ class ImportTodos:
             in_background=True,
         )
 
-    async def import_todo(
+    async def import_todos(
         self, file: UploadFile
-    ) -> list[db.Todo]:
-        # 実際のファイルサイズをチェック
-        await file.seek(self.MAX_FILE_SIZE)
-        if await file.read(1):
-            raise FileTooLarge("5MB")
-        await file.seek(0)
-
+    ) -> tuple[list[db.Todo], list[db.SubTask]]:
         reader = csv.DictReader(
             TextIOWrapper(file.file, encoding="utf-8"),
-            fieldnames=["title", "status"],
+            fieldnames=[
+                "title",
+                "status",
+                "subtask_title",
+                "subtask_status",
+            ],
         )
         # ヘッダーをスキップ
         next(reader)
 
         async with self.session.begin() as session:
-            data = (
-                db.BulkCreateParam(
-                    title=row["title"],
-                    status=Status(row["status"]),
-                )
-                for row in reader
+            todo_data: list[db.BulkTodoCreateParam] = []
+            subtask_rows: list[list[dict[str, str]]] = []
+            for row in reader:
+                if row["title"]:
+                    # CSVファイルのTODO行
+                    todo_data.append(
+                        db.BulkTodoCreateParam(
+                            title=row["title"],
+                            status=Status(row["status"]),
+                        )
+                    )
+                    subtask_rows.append([])
+                else:
+                    # CSVファイルのSubTask行
+                    subtask_rows[-1].append(
+                        {
+                            "title": row["subtask_title"],
+                            "status": row["subtask_status"],
+                        }
+                    )
+
+            # Todoを追加
+            new_todos = await db.Todo.bulk_create(
+                session, todo_data
             )
-            return await db.Todo.bulk_create(session, data)
+            assert len(new_todos) == len(subtask_rows)
+
+            # 作成されたtodo_idを使ってSubTaskを追加
+            subtask_data = [
+                db.BulkSubTaskCreateParam(
+                    todo_id=todo.todo_id,
+                    title=subtask["title"],
+                    status=Status(subtask["status"]),
+                )
+                for (todo, subtask_row) in zip(
+                    new_todos, subtask_rows
+                )
+                for subtask in subtask_row
+            ]
+            new_subtasks = await db.SubTask.bulk_create(
+                session, subtask_data
+            )
+            return new_todos, new_subtasks

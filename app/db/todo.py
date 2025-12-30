@@ -9,7 +9,6 @@ from sqlalchemy.orm import (
     column_property,
     joinedload,
     mapped_column,
-    noload,
     relationship,
 )
 
@@ -20,7 +19,7 @@ from .base import Base, str_256
 from .subtask import SubTask
 
 
-class BulkCreateParam(TypedDict):
+class BulkTodoCreateParam(TypedDict):
     title: str
     status: Status
 
@@ -123,7 +122,7 @@ class Todo(Base):
     async def bulk_create(
         cls,
         session: AsyncSession,
-        todos: Iterable[BulkCreateParam],
+        todos: Iterable[BulkTodoCreateParam],
     ) -> list[Self]:
         # https://docs.sqlalchemy.org/en/20/orm/persistence_techniques.html#using-insert-update-and-on-conflict-i-e-upsert-to-return-orm-objects
         return [
@@ -138,7 +137,7 @@ class Todo(Base):
     async def _bulk_create(
         cls,
         session: AsyncSession,
-        todos: Iterable[BulkCreateParam],
+        todos: Iterable[BulkTodoCreateParam],
     ) -> list[Self]:
         new_todo_dict = [
             {
@@ -148,12 +147,7 @@ class Todo(Base):
             }
             for todo in todos
         ]
-        stmt = (
-            insert(cls)
-            .values(new_todo_dict)
-            .options(noload(cls.subtasks))
-            .returning(cls)
-        )
+        stmt = insert(cls).values(new_todo_dict).returning(cls)
         return [
             todo
             for todo in (
