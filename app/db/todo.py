@@ -7,9 +7,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import (
     Mapped,
     column_property,
-    joinedload,
     mapped_column,
     relationship,
+    selectinload,
 )
 
 from app.models import Status
@@ -51,13 +51,14 @@ class Todo(Base):
         min_subtasks: int,
         include_subtasks: bool,
     ) -> Select[tuple[Self]]:
-        stmt = select(cls).order_by(desc(cls.created_at))
+        stmt = select(cls)
         if min_subtasks:
             stmt = stmt.filter(
                 cls.subtask_count >= min_subtasks
             )
         if include_subtasks:
-            stmt = stmt.options(joinedload(cls.subtasks))
+            stmt = stmt.options(selectinload(cls.subtasks))
+        stmt = stmt.order_by(desc(cls.created_at))
         return stmt
 
     @classmethod
@@ -67,7 +68,10 @@ class Todo(Base):
         min_subtasks: int,
         include_subtasks: bool,
     ) -> AsyncIterator[Self]:
-        stmt = cls.stmt_get_all(min_subtasks, include_subtasks)
+        stmt = cls.stmt_get_all(
+            min_subtasks=min_subtasks,
+            include_subtasks=include_subtasks,
+        )
         return await session.stream_scalars(stmt)
 
     @classmethod
