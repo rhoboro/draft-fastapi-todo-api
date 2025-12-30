@@ -39,6 +39,7 @@ class TestGetTodo:
             todo_id=todo_id,
             title="Todo 1",
             status=Status.NEW,
+            subtask_count=1,
             updated_at=common_dataset_datetime,
         )
         assert actual == expected
@@ -79,6 +80,7 @@ class TestCreateTodo:
             todo_id=todo_id,
             title="new todo",
             status=Status.NEW,
+            subtask_count=0,
             updated_at=datetime_now,
         )
         assert actual == expected
@@ -116,12 +118,15 @@ Todo 2,IN_PROGRESS
 """.encode("utf-8")
             ),
         )
-        actual = await use_case.import_todo(file)
-        assert len(actual) == 2
-        assert actual[0].title == "Todo 1"
-        assert actual[0].status == Status.NEW
-        assert actual[1].title == "Todo 2"
-        assert actual[1].status == Status.IN_PROGRESS
+        new_todos, new_subtasks = await use_case.import_todos(
+            file
+        )
+        assert len(new_todos) == 2
+        assert new_todos[0].title == "Todo 1"
+        assert new_todos[0].status == Status.NEW
+        assert new_todos[1].title == "Todo 2"
+        assert new_todos[1].status == Status.IN_PROGRESS
+        assert len(new_subtasks) == 0
 
     async def test_import_todos_chunk(
         self,
@@ -136,18 +141,47 @@ Todo 2,IN_PROGRESS
         )
         file = UploadFile(
             io.BytesIO(
-                """title,status
+                """title,status,subtask_title,subtask_status
 Todo 1,NEW
+,,SubTask 11,NEW
+,,SubTask 12,NEW
 Todo 2,IN_PROGRESS
+,,SubTask 21,COMPLETED
+,,SubTask 22,IN_PROGRESS
+,,SubTask 23,NEW
 Todo 3,COMPLETED
 """.encode("utf-8")
             ),
         )
-        actual = await use_case.import_todo(file)
-        assert len(actual) == 3
-        assert actual[0].title == "Todo 1"
-        assert actual[0].status == Status.NEW
-        assert actual[1].title == "Todo 2"
-        assert actual[1].status == Status.IN_PROGRESS
-        assert actual[2].title == "Todo 3"
-        assert actual[2].status == Status.COMPLETED
+        new_todos, new_subtasks = await use_case.import_todos(
+            file
+        )
+        assert len(new_todos) == 3
+        assert len(new_subtasks) == 5
+
+        # Todo 1
+        assert new_todos[0].title == "Todo 1"
+        assert new_todos[0].status == Status.NEW
+        assert new_subtasks[0].todo_id == new_todos[0].todo_id
+        assert new_subtasks[0].title == "SubTask 11"
+        assert new_subtasks[0].status == Status.NEW
+        assert new_subtasks[1].todo_id == new_todos[0].todo_id
+        assert new_subtasks[1].title == "SubTask 12"
+        assert new_subtasks[1].status == Status.NEW
+
+        # Todo 2
+        assert new_todos[1].title == "Todo 2"
+        assert new_todos[1].status == Status.IN_PROGRESS
+        assert new_subtasks[2].todo_id == new_todos[1].todo_id
+        assert new_subtasks[2].title == "SubTask 21"
+        assert new_subtasks[2].status == Status.COMPLETED
+        assert new_subtasks[3].todo_id == new_todos[1].todo_id
+        assert new_subtasks[3].title == "SubTask 22"
+        assert new_subtasks[3].status == Status.IN_PROGRESS
+        assert new_subtasks[4].todo_id == new_todos[1].todo_id
+        assert new_subtasks[4].title == "SubTask 23"
+        assert new_subtasks[4].status == Status.NEW
+
+        # Todo 3
+        assert new_todos[2].title == "Todo 3"
+        assert new_todos[2].status == Status.COMPLETED
