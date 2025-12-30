@@ -4,7 +4,7 @@ from typing import (
     TypeVar,
 )
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import DeclarativeBase
@@ -28,6 +28,8 @@ class _PagingInfo(BaseModel):
 
 
 class Pager[T: BaseModel](BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     items: list[T] = Field(
         description="ページング対象のデータ"
     )
