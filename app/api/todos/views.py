@@ -19,6 +19,7 @@ from .schemas import (
     GetTodoResponse,
     ImportTodosResponse,
     ListTodosResponse,
+    ListTodoWithSubTasksResponse,
     UpdateTodoRequest,
     UpdateTodoResponse,
 )
@@ -49,16 +50,25 @@ async def list_todos(
     ] = 0,
     min_subtasks: Annotated[int, Query(ge=0)] = 0,
     include_subtasks: Annotated[bool, Query()] = False,
-) -> ListTodosResponse:
+) -> ListTodosResponse | ListTodoWithSubTasksResponse:
     limit_offset = LimitOffset(limit=limit, offset=offset)
-    return cast(
-        ListTodosResponse,
-        await use_case.execute(
+    if include_subtasks:
+        with_subtasks = await use_case.execute(
             limit_offset=limit_offset,
             min_subtasks=min_subtasks,
-            include_subtasks=include_subtasks,
-        ),
-    )
+            include_subtasks=True,
+        )
+        return ListTodoWithSubTasksResponse.model_validate(
+            with_subtasks
+        )
+
+    else:
+        no_subtask = await use_case.execute(
+            limit_offset=limit_offset,
+            min_subtasks=min_subtasks,
+            include_subtasks=False,
+        )
+        return ListTodosResponse.model_validate(no_subtask)
 
 
 @router.post(

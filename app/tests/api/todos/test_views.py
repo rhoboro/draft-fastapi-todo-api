@@ -28,7 +28,6 @@ async def test_list_todos(
                 "todo_id": "fa4fa0f5-2847-475f-ba67-76f4d8fa8a00",  # noqa: E501
                 "updated_at": "2025-12-14T10:20:30.839088Z",
                 "subtask_count": 1,
-                "subtasks": None,
             },
             {
                 "status": "IN_PROGRESS",
@@ -36,7 +35,6 @@ async def test_list_todos(
                 "todo_id": "63efd7b7-b825-4b8d-b60a-728bb94dd90b",  # noqa: E501
                 "updated_at": "2025-12-14T10:20:30.839088Z",
                 "subtask_count": 2,
-                "subtasks": None,
             },
             {
                 "status": "COMPLETED",
@@ -44,7 +42,6 @@ async def test_list_todos(
                 "todo_id": "8940b5c4-57ac-4e38-8af4-82a510738717",  # noqa: E501
                 "updated_at": "2025-12-14T10:20:30.839088Z",
                 "subtask_count": 1,
-                "subtasks": None,
             },
         ],
     }

@@ -11,7 +11,11 @@ from app.models import (
 from app.pager import Pager
 
 
-class ListTodosResponse(Pager[TodoWithSubTasks]):
+class ListTodosResponse(Pager[Todo]):
+    items: list[Todo] = Field(serialization_alias="todos")
+
+
+class ListTodoWithSubTasksResponse(Pager[TodoWithSubTasks]):
     items: list[TodoWithSubTasks] = Field(
         serialization_alias="todos"
     )

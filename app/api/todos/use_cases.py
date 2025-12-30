@@ -1,5 +1,6 @@
 import csv
 from io import TextIOWrapper
+from typing import Literal, overload
 from uuid import UUID, uuid4
 
 from fastapi import BackgroundTasks, UploadFile
@@ -23,12 +24,40 @@ class ListTodos:
     def __init__(self, session: AsyncSession) -> None:
         self.session = session
 
+    @overload
+    async def execute(
+        self,
+        limit_offset: LimitOffset,
+        min_subtasks: int,
+        include_subtasks: Literal[True],
+    ) -> Pager[TodoWithSubTasks]: ...
+
+    @overload
+    async def execute(
+        self,
+        limit_offset: LimitOffset,
+        min_subtasks: int,
+        include_subtasks: Literal[False],
+    ) -> Pager[Todo]: ...
+
+    @overload
     async def execute(
         self,
         limit_offset: LimitOffset,
         min_subtasks: int,
         include_subtasks: bool,
-    ) -> Pager[TodoWithSubTasks]:
+    ) -> Pager[Todo | TodoWithSubTasks]: ...
+
+    async def execute(
+        self,
+        limit_offset: LimitOffset,
+        min_subtasks: int,
+        include_subtasks: bool,
+    ) -> (
+        Pager[Todo]
+        | Pager[TodoWithSubTasks]
+        | Pager[Todo | TodoWithSubTasks]
+    ):
         async with self.session() as session:
             query = db.Todo.stmt_get_all(
                 min_subtasks,
@@ -37,24 +66,15 @@ class ListTodos:
 
             def transformer(
                 todos: list[db.Todo],
-            ) -> list[TodoWithSubTasks]:
-                if include_subtasks:
-                    return [
-                        TodoWithSubTasks.model_validate(todo)
-                        for todo in todos
-                    ]
-                else:
-                    return [
-                        TodoWithSubTasks(
-                            todo_id=todo.todo_id,
-                            title=todo.title,
-                            status=todo.status,
-                            subtask_count=todo.subtask_count,
-                            updated_at=todo.updated_at,
-                            subtasks=None,
-                        )
-                        for todo in todos
-                    ]
+            ) -> list[Todo | TodoWithSubTasks]:
+                t = (
+                    TodoWithSubTasks
+                    if include_subtasks
+                    else Todo
+                )
+                return [
+                    t.model_validate(todo) for todo in todos
+                ]
 
             return await Pager.paginate(
                 session=session,
