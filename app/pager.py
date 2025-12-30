@@ -7,7 +7,7 @@ from typing import (
 from pydantic import BaseModel, Field
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import DeclarativeBase, noload
+from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.sql import Select
 
 
@@ -112,7 +112,7 @@ async def _get_count(
     session: AsyncSession,
     query: Select[tuple[U]],
 ) -> int:
-    sub = query.options(noload("*")).order_by(None).subquery()
+    sub = query.order_by(None).subquery()
     stmt = select(func.count()).select_from(sub)
     count = (await session.execute(stmt)).scalar_one()
     return count

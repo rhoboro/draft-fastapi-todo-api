@@ -34,15 +34,14 @@ class Todo(Base):
     title: Mapped[str_256]
     status: Mapped[Status]
 
-    subtasks: Mapped[list["SubTask"]] = relationship(
+    subtasks: Mapped[list[SubTask]] = relationship(
         back_populates="todo",
         cascade="delete, delete-orphan",
     )
 
-    subtask_count = column_property(
+    subtask_count: Mapped[int] = column_property(
         select(func.count(SubTask.subtask_id))
         .where(SubTask.todo_id == todo_id)
-        .correlate_except(SubTask)
         .scalar_subquery()
     )
 
