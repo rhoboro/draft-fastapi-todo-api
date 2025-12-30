@@ -11,7 +11,7 @@ from fastapi import (
 
 from app.api_route import LoggingRoute
 from app.context import bind_todo_id
-from app.pager import LimitOffset
+from app.pager import LimitOffsetQuery
 
 from .schemas import (
     CreateTodoRequest,
@@ -41,17 +41,11 @@ router = APIRouter(
 
 @router.get("", summary="Todoの一覧を取得する")
 async def list_todos(
+    limit_offset: LimitOffsetQuery,
     use_case: ListTodos = Depends(ListTodos),
-    limit: Annotated[
-        int, Query(ge=0, description="0なら最後まで取得")
-    ] = 0,
-    offset: Annotated[
-        int, Query(ge=0, description="データ取得の開始位置")
-    ] = 0,
     min_subtasks: Annotated[int, Query(ge=0)] = 0,
     include_subtasks: Annotated[bool, Query()] = False,
 ) -> ListTodosResponse | ListTodoWithSubTasksResponse:
-    limit_offset = LimitOffset(limit=limit, offset=offset)
     if include_subtasks:
         with_subtasks = await use_case.execute(
             limit_offset=limit_offset,
