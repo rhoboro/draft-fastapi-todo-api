@@ -40,24 +40,12 @@ class ListTodos:
         include_subtasks: Literal[False],
     ) -> Pager[Todo]: ...
 
-    @overload
     async def execute(
         self,
         limit_offset: LimitOffset,
         min_subtasks: int,
         include_subtasks: bool,
-    ) -> Pager[Todo | TodoWithSubTasks]: ...
-
-    async def execute(
-        self,
-        limit_offset: LimitOffset,
-        min_subtasks: int,
-        include_subtasks: bool,
-    ) -> (
-        Pager[Todo]
-        | Pager[TodoWithSubTasks]
-        | Pager[Todo | TodoWithSubTasks]
-    ):
+    ) -> Pager[Todo] | Pager[TodoWithSubTasks]:
         async with self.session() as session:
             query = db.Todo.stmt_get_all(
                 min_subtasks,
