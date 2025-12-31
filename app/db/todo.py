@@ -53,7 +53,7 @@ class Todo(Base):
     ) -> Select[tuple[Self]]:
         stmt = select(cls)
         if min_subtasks:
-            stmt = stmt.filter(
+            stmt = stmt.where(
                 cls.subtask_count >= min_subtasks
             )
         if include_subtasks:
