@@ -53,10 +53,10 @@ class Base(AsyncAttrs, DeclarativeBase):
     type_annotation_map = type_map
 
     created_at: Mapped[datetime] = mapped_column(
-        default=utcnow,
+        default_factory=utcnow,
     )
     updated_at: Mapped[datetime] = mapped_column(
-        default=utcnow, onupdate=utcnow
+        default_factory=utcnow, onupdate=utcnow
     )
 
     def __repr__(self) -> str:
