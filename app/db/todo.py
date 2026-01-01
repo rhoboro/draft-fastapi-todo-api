@@ -151,9 +151,4 @@ class Todo(Base):
             for todo in todos
         ]
         stmt = insert(cls).values(new_todo_dict).returning(cls)
-        return [
-            todo
-            for todo in (
-                (await session.execute(stmt)).scalars()
-            )
-        ]
+        return [todo for todo in await session.scalars(stmt)]

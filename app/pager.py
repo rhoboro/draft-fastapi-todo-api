@@ -121,7 +121,7 @@ async def _fetch_items(
     if limit:
         stmt = stmt.limit(limit)
     # joinedload の可能性もあるため unique() を呼ぶ
-    items = (await session.execute(stmt)).unique().scalars()
+    items = (await session.scalars(stmt)).unique()
     return list(items)
 
 
@@ -131,5 +131,5 @@ async def _get_count(
 ) -> int:
     sub = query.order_by(None).subquery()
     stmt = select(func.count()).select_from(sub)
-    count = (await session.execute(stmt)).scalar_one()
+    count = (await session.scalars(stmt)).one()
     return count

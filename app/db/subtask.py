@@ -140,8 +140,5 @@ class SubTask(Base):
             insert(cls).values(new_subtask_dict).returning(cls)
         )
         return [
-            subtask
-            for subtask in (
-                (await session.execute(stmt)).scalars()
-            )
+            subtask for subtask in await session.scalars(stmt)
         ]
