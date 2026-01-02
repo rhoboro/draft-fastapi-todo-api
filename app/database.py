@@ -1,4 +1,4 @@
-from typing import Annotated, AsyncIterator, TypeAlias
+from typing import Annotated, AsyncIterator
 
 import structlog
 from fastapi import Depends
@@ -35,6 +35,6 @@ async def get_session() -> AsyncIterator[
         raise AppException() from e
 
 
-AsyncSession: TypeAlias = Annotated[
+AsyncSession = Annotated[
     async_sessionmaker[_AsyncSession], Depends(get_session)
 ]
