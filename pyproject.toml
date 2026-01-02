@@ -7,9 +7,7 @@ requires-python = "==3.14.*"
 dependencies = [
     "alembic>=1.17.2",
     "fastapi[standard]>=0.121.3",
-    "freezegun>=1.5.5",
     "pydantic-settings>=2.12.0",
-    "pytest>=9.0.1",
     "sqlalchemy[postgresql-asyncpg]>=2.0.44",
     "structlog>=25.5.0",
 ]
@@ -17,10 +15,14 @@ dependencies = [
 [dependency-groups]
 dev = [
     "mypy>=1.18.2",
+    "ruff>=0.14.6",
+]
+testing = [
+    "freezegun>=1.5.5",
+    "pytest>=9.0.2",
     "pytest-cov>=7.0.0",
     "pytest-env>=1.2.0",
     "pytest-mock>=3.15.1",
-    "ruff>=0.14.6",
 ]
 
 [tool.ruff]
@@ -32,10 +34,10 @@ select = ["E", "F", "I"]
 [tool.mypy]
 strict = true
 
-[tool.pytest.ini_options]
+[tool.pytest]
 env = [
     "DB_URI=postgresql+asyncpg://postgres:password@postgres:5432/test",
     "USE_CONSOLE_LOG=false",
 ]
-addopts = "-v --cov=app"
+addopts = ["-v", "--cov=app"]
 markers = ["tmp"]
