@@ -16,6 +16,10 @@ from app.settings import settings
 
 async_engine = create_async_engine(
     str(settings.DB_URI),
+    pool_size=5,
+    pool_timeout=10,
+    pool_use_lifo=True,
+    pool_pre_ping=True,
 )
 
 AsyncSessionLocal = async_sessionmaker(
