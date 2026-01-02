@@ -1,4 +1,4 @@
-from typing import cast
+from typing import Annotated, cast
 from uuid import UUID
 
 from fastapi import APIRouter, Depends
@@ -20,7 +20,7 @@ router = APIRouter(
 )
 async def get_operation(
     operation_id: UUID,
-    use_case: GetOperation = Depends(GetOperation),
+    use_case: Annotated[GetOperation, Depends(GetOperation)],
 ) -> GetOperationResponse:
     return cast(
         GetOperationResponse,

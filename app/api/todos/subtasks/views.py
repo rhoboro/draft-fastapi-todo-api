@@ -1,4 +1,4 @@
-from typing import cast
+from typing import Annotated, cast
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, status
@@ -28,7 +28,7 @@ router = APIRouter(route_class=LoggingRoute)
 @router.get("", summary="SubTaskの一覧を取得する")
 async def list_subtasks(
     todo_id: UUID,
-    use_case: ListSubTasks = Depends(ListSubTasks),
+    use_case: Annotated[ListSubTasks, Depends(ListSubTasks)],
 ) -> ListSubTasksResponse:
     return ListSubTasksResponse(
         subtasks=[
@@ -46,7 +46,7 @@ async def list_subtasks(
 async def create_subtask(
     todo_id: UUID,
     data: CreateSubTaskRequest,
-    use_case: CreateSubTask = Depends(CreateSubTask),
+    use_case: Annotated[CreateSubTask, Depends(CreateSubTask)],
 ) -> CreateSubTaskResponse:
     return cast(
         CreateSubTaskResponse,
@@ -64,7 +64,7 @@ async def create_subtask(
 async def get_subtask(
     todo_id: UUID,
     subtask_id: UUID,
-    use_case: GetSubTask = Depends(GetSubTask),
+    use_case: Annotated[GetSubTask, Depends(GetSubTask)],
 ) -> GetSubTaskResponse:
     return cast(
         GetSubTaskResponse,
@@ -83,7 +83,7 @@ async def update_subtask(
     todo_id: UUID,
     subtask_id: UUID,
     data: UpdateSubTaskRequest,
-    use_case: UpdateSubTask = Depends(UpdateSubTask),
+    use_case: Annotated[UpdateSubTask, Depends(UpdateSubTask)],
 ) -> UpdateSubTaskResponse:
     return cast(
         UpdateSubTaskResponse,
@@ -105,7 +105,7 @@ async def update_subtask(
 async def delete_subtask(
     todo_id: UUID,
     subtask_id: UUID,
-    use_case: DeleteSubTask = Depends(DeleteSubTask),
+    use_case: Annotated[DeleteSubTask, Depends(DeleteSubTask)],
 ) -> None:
     return await use_case.execute(
         todo_id=todo_id, subtask_id=subtask_id

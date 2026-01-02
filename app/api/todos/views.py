@@ -53,7 +53,7 @@ FilterQuery = Annotated[ListTodosFilter, Depends(_get_filter)]
 async def list_todos(
     limit_offset: LimitOffsetQuery,
     filter_: Annotated[ListTodosFilter, Depends(_get_filter)],
-    use_case: ListTodos = Depends(ListTodos),
+    use_case: Annotated[ListTodos, Depends(ListTodos)],
     include_subtasks: Annotated[bool, Query()] = False,
 ) -> ListTodosResponse | ListTodoWithSubTasksResponse:
     if include_subtasks:
@@ -82,7 +82,7 @@ async def list_todos(
 )
 async def create_todo(
     data: CreateTodoRequest,
-    use_case: CreateTodo = Depends(CreateTodo),
+    use_case: Annotated[CreateTodo, Depends(CreateTodo)],
 ) -> CreateTodoResponse:
     return cast(
         CreateTodoResponse, await use_case.execute(data.title)
@@ -96,7 +96,7 @@ async def create_todo(
 )
 async def get_todo(
     todo_id: UUID,
-    use_case: GetTodo = Depends(GetTodo),
+    use_case: Annotated[GetTodo, Depends(GetTodo)],
 ) -> GetTodoResponse:
     return cast(
         GetTodoResponse,
@@ -112,7 +112,7 @@ async def get_todo(
 async def update_todo(
     todo_id: UUID,
     data: UpdateTodoRequest,
-    use_case: UpdateTodo = Depends(UpdateTodo),
+    use_case: Annotated[UpdateTodo, Depends(UpdateTodo)],
 ) -> UpdateTodoResponse:
     return cast(
         UpdateTodoResponse,
@@ -132,7 +132,7 @@ async def update_todo(
 )
 async def delete_todo(
     todo_id: UUID,
-    use_case: DeleteTodo = Depends(DeleteTodo),
+    use_case: Annotated[DeleteTodo, Depends(DeleteTodo)],
 ) -> None:
     await use_case.execute(todo_id=todo_id)
 
@@ -143,7 +143,7 @@ async def delete_todo(
 )
 async def import_todos(
     file: UploadFile,
-    use_case: ImportTodos = Depends(ImportTodos),
+    use_case: Annotated[ImportTodos, Depends(ImportTodos)],
 ) -> ImportTodosResponse:
     return ImportTodosResponse(
         operation_id=await use_case.execute(file)
